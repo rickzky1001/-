@@ -2,9 +2,9 @@ import gurobipy as gp
 from gurobipy import GRB
 
 # 参数
-m = 18  # 公主数量
-n = 31  # 王子数量
-k=5
+m = 10  # 公主数量
+n = 28  # 王子数量
+k=3
 # 需求量
 demand_100 = 10 * m  # 公主需要 10*m 个 100 cm 的布料
 demand_60 = 15 * n   # 王子需要 15*n 个 60 cm 的布料
@@ -29,7 +29,11 @@ for i in range(k):
 # 添加约束：满足需求
 model.addConstr(gp.quicksum((X1[i] * Y[i])for i in range(k)) >= demand_100, name="Demand100")
 model.addConstr(gp.quicksum((X2[i] * Y[i])for i in range(k)) >= demand_60, name="Demand60")
-model.update()
+# 添加约束：执行次数>0的方案不相同
+# for i in range(k):
+#     for j in range(i + 1, k):
+#         model.addConstr((Y[i] >= 0) & (Y[j] >= 0) >> ((X1[i] != X1[j]) | (X2[i] != X2[j])))
+
 model.write("result/cutting_stock.lp")
 
 # 求解模型
