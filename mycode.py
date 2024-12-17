@@ -2,8 +2,8 @@ import gurobipy as gp
 from gurobipy import GRB
 
 # 参数
-m = 10  # 公主数量
-n = 28  # 王子数量
+m = 309  # 公主数量
+n = 527  # 王子数量
 k=3
 # 需求量
 demand_100 = 10 * m  # 公主需要 10*m 个 100 cm 的布料
@@ -19,7 +19,8 @@ Y = model.addVars(k, vtype=GRB.INTEGER, name="Y", lb=0)    # Y_i: 第i种裁剪�
 
 # 目标函数：最小化浪费布料的长度
 model.setObjective(
-    gp.quicksum((400 * Y[i])for i in range(k) )- (100 * demand_100 + 60 * demand_60) ,
+    gp.quicksum((400 * Y[i])for i in range(k) )- (100 * demand_100 + 60 * demand_60) +
+    gp.quicksum((X1[i]+X2[i])for i in range(k) )/(k*5),
     GRB.MINIMIZE
 )
 
@@ -43,8 +44,12 @@ model.optimize()
 # 输出结果
 if model.status == GRB.OPTIMAL:
     print("最优解:")
+    t=0
     for i in range(k):
-        print(f"裁剪方案 {i + 1}: {Y[i].x} 次, 100cm裁剪 {X1[i].x} 次, 60cm裁剪 {X2[i].x} 次")
-    print(f"最小浪费布料总长度：{model.objVal}")
+        if Y[i].X>0:
+            t+=1
+            print(f"裁剪方案 {t}: {Y[i].x} 次, 100cm裁剪 {X1[i].x} 次, 60cm裁剪 {X2[i].x} 次")
+    total_cost = gp.quicksum(400 * Y[i].X for i in range(k)) - (100 * demand_100 + 60 * demand_60)
+    print(f"最小浪费布料总长度：{total_cost}")
 else:
     print("没有找到最优解")
